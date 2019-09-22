@@ -11,6 +11,11 @@ goalList =[[9,8,7],
 
 
 class puzzleType:
+"""
+Class containing the methods and variables for the nodes generated of 
+the matrix.
+"""	
+	
 	def __init__(self):
 		
 
