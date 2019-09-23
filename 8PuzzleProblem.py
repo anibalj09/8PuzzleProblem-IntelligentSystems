@@ -1,14 +1,24 @@
 #import os
 import sys
+import random
 #from dataclasses import dataclass
 
 # Constant with size of rows/columns
 _ARRAY_SIZE = 3
 
-goalList =[[0,8,7],
-		   [6,5,4],
-		   [3,2,1]]
+#goalList =[[0,8,7],
+#		   [6,5,4],
+#		   [3,2,1]]
 
+def generate_number_list():
+    return randint(0, _ARRAY_SIZE*3 - 1)
+
+def create_puzle():
+    number_list = generate_number_list
+    first_row = number_list[0:_ARRAY_SIZE*1]
+    second_row = number_list[_ARRAY_SIZE*1:_ARRAY_SIZE*2]
+    third_row = number_list[_ARRAY_SIZE*2:_ARRAY_SIZE*3]
+    return [first_row, second_row, third_row]
 
 class puzzleType:
 	"""
@@ -188,9 +198,10 @@ def getGoalListFromUser():
 	
 def main():
 	aNode = puzzleType() 
-	aNode.currentMatrix = [[1,2,3],
-						   [4,5,6],
-						   [7,8,0]]
+	#aNode.currentMatrix = [[1,2,3],
+	#					   [4,5,6],
+	#					   [7,8,0]]
+	aNode.currentMatrix = create_puzle()
 						   
 	aListOfNodes = aNode._generatePossibleStates()
 	for x in range(0, len(aListOfNodes)):
