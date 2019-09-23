@@ -6,9 +6,9 @@ import random
 # Constant with size of rows/columns
 _ARRAY_SIZE = 3
 
-#goalList =[[0,8,7],
-#		   [6,5,4],
-#		   [3,2,1]]
+goalList =[[0,8,7],
+		   [6,5,4],
+		   [3,2,1]]
 
 def generate_number_list():
     return randint(0, _ARRAY_SIZE*3 - 1)
