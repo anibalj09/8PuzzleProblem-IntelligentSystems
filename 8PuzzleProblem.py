@@ -11,10 +11,12 @@ goalList =[[0,8,7],
 		   [3,2,1]]
 
 def generate_number_list():
-    return randint(0, _ARRAY_SIZE*3 - 1)
+	number_list = list(range(0, _ARRAY_SIZE*3))
+	random.shuffle(number_list) # it is shuffled in place
+	return number_list
 
 def create_puzle():
-    number_list = generate_number_list
+    number_list = generate_number_list()
     first_row = number_list[0:_ARRAY_SIZE*1]
     second_row = number_list[_ARRAY_SIZE*1:_ARRAY_SIZE*2]
     third_row = number_list[_ARRAY_SIZE*2:_ARRAY_SIZE*3]
