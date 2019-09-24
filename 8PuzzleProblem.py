@@ -7,8 +7,8 @@ import random
 _ARRAY_SIZE = 3
 
 goalList =[[0,8,7],
-		   [6,5,4],
-		   [3,2,1]]
+	   [6,5,4],
+	   [3,2,1]]
 
 def generate_number_list():
 	number_list = list(range(0, _ARRAY_SIZE*3))
@@ -16,11 +16,18 @@ def generate_number_list():
 	return number_list
 
 def create_puzle():
-    number_list = generate_number_list()
-    first_row = number_list[0:_ARRAY_SIZE*1]
-    second_row = number_list[_ARRAY_SIZE*1:_ARRAY_SIZE*2]
-    third_row = number_list[_ARRAY_SIZE*2:_ARRAY_SIZE*3]
-    return [first_row, second_row, third_row]
+	number_list = generate_number_list()
+	first_row = number_list[0:_ARRAY_SIZE*1]
+	second_row = number_list[_ARRAY_SIZE*1:_ARRAY_SIZE*2]
+	third_row = number_list[_ARRAY_SIZE*2:_ARRAY_SIZE*3]
+	return [first_row, second_row, third_row]
+
+def printMatrix(currentMatrix):
+	"""Print a list as a matrix."""
+	# Goes through each row printing all the columns
+	for x in range(0,_ARRAY_SIZE):
+		print (currentMatrix[x][:])
+		print ("\n")
 
 class puzzleType:
 	"""
@@ -37,14 +44,6 @@ class puzzleType:
 						      [0,0,0],
 						      [0,0,0]]
 	
-	def _printMatrix(self):
-		"""Print a list as a matrix."""
-		
-		#print ("\n")
-		# Goes through each row printing all the columns
-		for x in range(0,_ARRAY_SIZE):
-			print (self.currentMatrix[x][:])
-		print ("\n")
 
 	def _getManhattanDistance(self, anElement, currentX, currentY):
 		"""Calculate the Manhattan Distance heuristic from received list
@@ -208,7 +207,7 @@ def main():
 	aListOfNodes = aNode._generatePossibleStates()
 	for x in range(0, len(aListOfNodes)):
 		tempNode = aListOfNodes.pop()
-		tempNode._printMatrix()
+		printMatrix(tempNode.currentMatrix)
 	
 	#disHeur, manDis = getHeuristics(aList)
 	#print ("The total displaced heuristic is " + str(disHeur) + ", and the total Manhattan Distance is " + str(manDis))
