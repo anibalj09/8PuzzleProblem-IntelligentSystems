@@ -28,7 +28,8 @@ def printMatrix(currentMatrix):
     # Goes through each row printing all the columns
     for x in range(0,_ARRAY_SIZE):
         print (currentMatrix[x][:])
-        print ("\n")
+    print("\n")
+
 
 class puzzleType:
     """
@@ -53,7 +54,16 @@ class puzzleType:
         elif(isinstance(provided_matrix,list)):
             self.currentMatrix = provided_matrix
         else:
-            raise ValueError('Provided matrix was not a list of numbers')    
+            raise ValueError('Provided matrix was not a list of numbers')
+
+
+    def _printMatrix(self):
+        """Print a matrix object."""
+        # Goes through each row printing all the columns
+        for x in range(0,_ARRAY_SIZE):
+            print (self.currentMatrix[x][:])
+        print("\tThis matrix\'s value: %s\n"%(self.totalH))
+
 
     def _getManhattanDistance(self, anElement, currentX, currentY):
         """Calculate the Manhattan Distance heuristic from received list
@@ -141,28 +151,28 @@ class puzzleType:
         tempX = tempY = 0
         listNodesGenerated = []
         
-        if zeroX > 0:
+        if zeroX > 0: # if empty is not on the left-most side
             tempNode1 = self._cloneMatrix()
             tempNode1.parent = self
             tempNode1.currentMatrix[zeroX][zeroY] = self.currentMatrix[zeroX-1][zeroY]
             tempNode1.currentMatrix[zeroX-1][zeroY] = self.currentMatrix[zeroX][zeroY]
             tempNode1._assignHeuristicsToNode()
             listNodesGenerated.append(tempNode1)
-        if zeroX < (_ARRAY_SIZE - 2):
+        if zeroX < (_ARRAY_SIZE - 2): # if empty is not on the right-most side
             tempNode2 = self._cloneMatrix()
             tempNode2.parent = self
             tempNode2.currentMatrix[zeroX][zeroY] = self.currentMatrix[zeroX+1][zeroY]
             tempNode2.currentMatrix[zeroX+1][zeroY] = self.currentMatrix[zeroX][zeroY]
             tempNode2._assignHeuristicsToNode()
             listNodesGenerated.append(tempNode2)
-        if zeroY > 0:
+        if zeroY > 0: # if empty is not on the bottom side
             tempNode3 = self._cloneMatrix()
             tempNode3.parent = self
             tempNode3.currentMatrix[zeroX][zeroY] = self.currentMatrix[zeroX][zeroY-1]
             tempNode3.currentMatrix[zeroX][zeroY-1] = self.currentMatrix[zeroX][zeroY]
             tempNode3._assignHeuristicsToNode()
             listNodesGenerated.append(tempNode3)
-        if zeroY < (_ARRAY_SIZE - 2):
+        if zeroY < (_ARRAY_SIZE - 2): # if empty is not on the top side
             tempNode4 = self._cloneMatrix()
             tempNode4.parent = self
             tempNode4.currentMatrix[zeroX][zeroY] = self.currentMatrix[zeroX][zeroY+1]
@@ -205,30 +215,39 @@ def getGoalListFromUser():
     
     printMatrix(goalList)    
 
+
+def start_solving(puzzle):
     
+    aListOfNodes = puzzle._generatePossibleStates()
+    print("Printing next move possibilities: ")
+    for x in range(0, len(aListOfNodes)):
+        tempNode = aListOfNodes.pop()
+        tempNode._printMatrix()
+
+    
+    #disHeur, manDis = getHeuristics(aList)
+    #print ("The total displaced heuristic is " + str(disHeur) + ", and the total Manhattan Distance is " + str(manDis))
+
+
 def main():
-    aNode = puzzleType()
+    init_puzzle = puzzleType()
 
     arg_length = len(sys.argv)
 
     if (arg_length > 1):
         print("Starting Import with the following parameters: " + str(sys.argv))
         try:
-            aNode._setMatrix(sys.argv[1])
+            init_puzzle._setMatrix(sys.argv[1])
         except ValueError:
             print("Was not provided a list of integers\nAsking user to type in puzzle starting from top left")
-            aNode._setMatrix(getListFromUser())
+            init_puzzle._setMatrix(getListFromUser())
         exit()
     else:
-        aNode._setMatrix(create_puzzle())
-                           
-    aListOfNodes = aNode._generatePossibleStates()
-    for x in range(0, len(aListOfNodes)):
-        tempNode = aListOfNodes.pop()
-        printMatrix(tempNode.currentMatrix)
-    
-    #disHeur, manDis = getHeuristics(aList)
-    #print ("The total displaced heuristic is " + str(disHeur) + ", and the total Manhattan Distance is " + str(manDis))
+        init_puzzle._setMatrix(create_puzzle())
+    printMatrix(init_puzzle.currentMatrix)
+    print("Puzzle recieved, solving problem")
+
+    start_solving(init_puzzle)
 
 
 if __name__ == "__main__":
