@@ -11,24 +11,40 @@ goalList =[[0,8,7],
        [6,5,4],
        [3,2,1]]
 
+matrix_ledger = {}
+
 def generate_number_list():
     number_list = list(range(0, _ARRAY_SIZE*3))
     random.shuffle(number_list) # it is shuffled in place
     return number_list
 
-def create_puzzle():
-    number_list = generate_number_list()
+
+def create_puzzle(number_list=generate_number_list()):
     first_row = number_list[0:_ARRAY_SIZE*1]
     second_row = number_list[_ARRAY_SIZE*1:_ARRAY_SIZE*2]
     third_row = number_list[_ARRAY_SIZE*2:_ARRAY_SIZE*3]
     return [first_row, second_row, third_row]
 
+
 def printMatrix(currentMatrix):
     """Print a list as a matrix."""
     # Goes through each row printing all the columns
+    print("HHHHHH: %s"%(currentMatrix))
     for x in range(0,_ARRAY_SIZE):
         print (currentMatrix[x][:])
     print("\n")
+
+
+def add_to_matrix_history(aPuzzle):
+    try:
+        matrix_ledger[aPuzzle.matrixFingerprint] = 1
+        return 1
+    except KeyError: # If it already exists
+        return 0
+
+
+def check_matrix_history(aPuzzle):
+    return aPuzzle.matrixFingerprint in matrix_ledger #Returns true if it already exists
 
 
 class puzzleType:
@@ -45,24 +61,31 @@ class puzzleType:
         self.currentMatrix = [[0,0,0],
                               [0,0,0],
                               [0,0,0]]
+        self.matrixFingerprint = 0
+        self.previousMoves = []
+
 
     def _setMatrix(self,provided_matrix):
-        print("Provided with: %s" %(provided_matrix) )
-        
+        #print("Provided with: %s" %(provided_matrix) )
         if(isinstance(provided_matrix,str)):
-            self.currentMatrix = ast.literal_eval(provided_matrix)
+            self.currentMatrix = create_puzzle(ast.literal_eval(provided_matrix))
         elif(isinstance(provided_matrix,list)):
             self.currentMatrix = provided_matrix
         else:
             raise ValueError('Provided matrix was not a list of numbers')
+        self.matrixFingerprint = str(list(provided_matrix))
+        if(not add_to_matrix_history(self)):
+            print("In a recursive state aborting")
+            exit()
 
 
     def _printMatrix(self):
         """Print a matrix object."""
         # Goes through each row printing all the columns
-        for x in range(0,_ARRAY_SIZE):
+        for x in range(0, _ARRAY_SIZE):
             print (self.currentMatrix[x][:])
         print("\tThis matrix\'s value: %s\n"%(self.totalH))
+        #print ("The total displaced heuristic is " + str(disHeur) + ", and the total Manhattan Distance is " + str(manDis))
 
 
     def _getManhattanDistance(self, anElement, currentX, currentY):
@@ -95,6 +118,7 @@ class puzzleType:
         self.manDistH = manDis
         return manDis
 
+
     def _getHeuristics(self):
         """Get both heuristics from aList."""
         
@@ -115,6 +139,7 @@ class puzzleType:
         
         return displacedHeuristic, cummulativeManDis
     
+
     def _assignHeuristicsToNode(self):
         """Finds the heuristics and saves it to the current node."""
         disH = mdH = 0
@@ -125,15 +150,17 @@ class puzzleType:
         self.totalH = disH + mdH
     
     
-    def _compareMatrixes(self):
+    def _checkGoal(self):
         """Check if current list is the goal state."""
         
         for x in range(0, _ARRAY_SIZE):
             for y in range(0, _ARRAY_SIZE):
                 if self.currentMatrix[x][y] != goalList[x][y]:
-                    return False        
+                    return False
+        print("found goal")        
         return True
     
+
     def _cloneMatrix(self):
         """Clone current matrix to new puzzleType node and return. Used
            for creating new children nodes."""
@@ -144,6 +171,7 @@ class puzzleType:
             
         return tempNode
     
+
     def _generatePossibleStates(self):
         """Generate all possible moves in the current puzzle."""
 
@@ -182,6 +210,7 @@ class puzzleType:
         
         return listNodesGenerated
     
+
     def _getZeroPosition(self):
         """Get the x and y coordinates of the zero tile."""
         for x in range(0, _ARRAY_SIZE):
@@ -191,6 +220,7 @@ class puzzleType:
         
         return -1,-1    
         
+
 def getListFromUser():
     """Get test list from user input."""
     print ("Enter the test puzzle matrix (9 numbers, hit enter after each one): ")
@@ -205,6 +235,7 @@ def getListFromUser():
     printMatrix(aList)
     return aList
     
+
 def getGoalListFromUser():
     """Get goal list from user input."""
     print ("Enter the goal puzzle matrix (9 numbers, from 0-8, \n hit enter after each one): ")
@@ -216,17 +247,31 @@ def getGoalListFromUser():
     printMatrix(goalList)    
 
 
-def start_solving(puzzle):
+def determine_best_move(listNodesGenerated):
+    #print("List of nodes Generated: %s"%(listNodesGenerated))
+    options_by_value = sorted(listNodesGenerated, key=lambda obj: obj.totalH)
     
-    aListOfNodes = puzzle._generatePossibleStates()
-    print("Printing next move possibilities: ")
-    for x in range(0, len(aListOfNodes)):
-        tempNode = aListOfNodes.pop()
-        tempNode._printMatrix()
+    x = 0
+    while(check_matrix_history(options_by_value[x])): #enter loop if true
+        x = x + 1
+    #print("selected: %s"%(options_by_value[x].currentMatrix))
+    return options_by_value[x]
+    
 
-    
-    #disHeur, manDis = getHeuristics(aList)
-    #print ("The total displaced heuristic is " + str(disHeur) + ", and the total Manhattan Distance is " + str(manDis))
+def start_solving(puzzle):
+    if(puzzle._checkGoal()):
+        return 1
+    else:
+        aListOfNodes = puzzle._generatePossibleStates()
+        next_move = determine_best_move(aListOfNodes)
+        puzzle._setMatrix(next_move.currentMatrix)
+
+        print("Printing next move possibilities: ")
+        for x in range(0, len(aListOfNodes)):
+            tempNode = aListOfNodes.pop()
+            tempNode._printMatrix()
+
+        start_solving(puzzle)
 
 
 def main():
@@ -241,13 +286,13 @@ def main():
         except ValueError:
             print("Was not provided a list of integers\nAsking user to type in puzzle starting from top left")
             init_puzzle._setMatrix(getListFromUser())
-        exit()
     else:
         init_puzzle._setMatrix(create_puzzle())
     printMatrix(init_puzzle.currentMatrix)
     print("Puzzle recieved, solving problem")
 
-    start_solving(init_puzzle)
+    if(start_solving(init_puzzle)):
+        print("Solution Found after %s attempts"%(len(matrix_ledger)))
 
 
 if __name__ == "__main__":
