@@ -11,7 +11,8 @@ goalList =[[0,8,7],
        [6,5,4],
        [3,2,1]]
 
-matrix_ledger = {}
+matrix_ledger = {'0':1} #add default init so that isn't considered as a state
+fringe_list = []
 
 def generate_number_list():
     number_list = list(range(0, _ARRAY_SIZE*3))
@@ -29,18 +30,17 @@ def create_puzzle(number_list=generate_number_list()):
 def printMatrix(currentMatrix):
     """Print a list as a matrix."""
     # Goes through each row printing all the columns
-    print("HHHHHH: %s"%(currentMatrix))
     for x in range(0,_ARRAY_SIZE):
         print (currentMatrix[x][:])
     print("\n")
 
 
 def add_to_matrix_history(aPuzzle):
-    try:
+    if(check_matrix_history(aPuzzle)):
+        return 0 # If it already exists
+    else:
         matrix_ledger[aPuzzle.matrixFingerprint] = 1
         return 1
-    except KeyError: # If it already exists
-        return 0
 
 
 def check_matrix_history(aPuzzle):
@@ -74,6 +74,7 @@ class puzzleType:
         else:
             raise ValueError('Provided matrix was not a list of numbers')
         self.matrixFingerprint = str(list(provided_matrix))
+
         if(not add_to_matrix_history(self)):
             print("In a recursive state aborting")
             exit()
@@ -250,12 +251,13 @@ def getGoalListFromUser():
 def determine_best_move(listNodesGenerated):
     #print("List of nodes Generated: %s"%(listNodesGenerated))
     options_by_value = sorted(listNodesGenerated, key=lambda obj: obj.totalH)
-    
+    options_by_value.append(fringe_list) #Add existing fringe_list containing unattempted states
     x = 0
     while(check_matrix_history(options_by_value[x])): #enter loop if true
         x = x + 1
     #print("selected: %s"%(options_by_value[x].currentMatrix))
-    return options_by_value[x]
+    fringe_list.append(options_by_value[:x:-1][::-1]) #slice python lower-bound exclusive and then reverse the order
+    return options_by_value[x] #Current selection is left out of fringe_list
     
 
 def start_solving(puzzle):
@@ -266,10 +268,10 @@ def start_solving(puzzle):
         next_move = determine_best_move(aListOfNodes)
         puzzle._setMatrix(next_move.currentMatrix)
 
-        print("Printing next move possibilities: ")
-        for x in range(0, len(aListOfNodes)):
-            tempNode = aListOfNodes.pop()
-            tempNode._printMatrix()
+        # print("Printing next move possibilities: ")
+        # for x in range(0, len(aListOfNodes)):
+        #     tempNode = aListOfNodes.pop()
+        #     tempNode._printMatrix()
 
         start_solving(puzzle)
 
