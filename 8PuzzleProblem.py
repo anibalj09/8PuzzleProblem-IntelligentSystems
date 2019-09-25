@@ -278,7 +278,7 @@ def determine_best_move(listNodesGenerated):
 
 def start_solving(puzzle):
     if(puzzle._checkGoal()):
-        return True
+        return 1
     else:
         aListOfNodes = puzzle._generatePossibleStates()
         next_move = determine_best_move(aListOfNodes)
@@ -291,7 +291,7 @@ def start_solving(puzzle):
         print("Printing chosen path:")
         printMatrix(next_move.currentMatrix)
         puzzle._setMatrix(next_move.currentMatrix)
-        start_solving(puzzle)
+        return puzzle
 
 
 def main():
@@ -313,7 +313,8 @@ def main():
     print("Puzzle recieved, solving problem")
     printMatrix(init_puzzle.currentMatrix)
 
-    start_solving(init_puzzle)
+    while(type(start_solving(init_puzzle)) != int):
+        print("Total moves so far:  %s" %(len(matrix_ledger)-2)) #subtract two for the init of '0' and for the puzzle's first state
         
 
 
