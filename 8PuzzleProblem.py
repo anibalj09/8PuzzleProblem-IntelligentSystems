@@ -107,7 +107,6 @@ class puzzleType:
                 # Find element in goalList and save coordinates.
                 goalY = goalList[x].index(anElement)
                 goalX = x
-                # Break out of for loop.
                 break
             except:
                 # Index function of list will return an exception if failed.
@@ -162,7 +161,7 @@ class puzzleType:
             for y in range(0, _ARRAY_SIZE):
                 if self.currentMatrix[x][y] != goalList[x][y]:
                     return False
-        print("found goal")        
+        print("Solution Found after %s attempts"%(len(matrix_ledger)))    
         return True
     
 
@@ -225,7 +224,6 @@ class puzzleType:
         for x in range(0, _ARRAY_SIZE):
             for y in range(0, _ARRAY_SIZE):
                 if self.currentMatrix[x][y] == 0:
-                    print("zeroth postion: %s %s"%(x,y))
                     return x, y
         return -1,-1    
         
@@ -258,22 +256,29 @@ def getGoalListFromUser():
 
 def determine_best_move(listNodesGenerated):
     global fringe_list
-    #print("List of nodes Generated: %s"%(listNodesGenerated))
-    options_by_value = sorted(listNodesGenerated, key=lambda obj: obj.totalH) + fringe_list #Add to the end, existing fringe_list containing unattempted states
+    options_by_value = sorted(listNodesGenerated, key=lambda obj: obj.totalH) #first look at moves avaliable in this turn before trying fringe. (Which is basically reverting board to a previous state when stuck)
     
-    print("Options: %s and length: %s"%(options_by_value,len(options_by_value)))
-    current_canidate = options_by_value.pop()
-    while(check_matrix_history(current_canidate)): #enter loop if true
-        print("clash with: %s"%(current_canidate.matrixFingerprint))
-        current_canidate = options_by_value.pop()
-    #print("selected: %s"%(options_by_value[x].currentMatrix))
-    fringe_list = options_by_value #This will replace existing fringe list with remaining unchecked nodes
+    num_of_legal_move_options = len(options_by_value)
+
+    current_canidate = options_by_value.pop(0) #Remove the first puzzle from list of new puzzle states after a possible move
+    #print("WTF: %s"%(check_matrix_history(current_canidate)))
+    while(check_matrix_history(current_canidate)): #enter loop if true. Meaning state already has been seen so try another
+        try:
+            current_canidate = options_by_value.pop(0)
+        except IndexError:
+            #Play the game illegally by going back to a previous game state and trying something else
+            current_canidate = fringe_list.pop(0) #try from the existing fringe_list containing unattempted states    
+            num_of_legal_move_options = 0
+    
+    if(num_of_legal_move_options > 0): #Save unchecked moves for later
+        fringe_list = options_by_value #This will replace existing fringe list with remaining unchecked nodes
+    
     return current_canidate
     
 
 def start_solving(puzzle):
     if(puzzle._checkGoal()):
-        return 1
+        return True
     else:
         aListOfNodes = puzzle._generatePossibleStates()
         next_move = determine_best_move(aListOfNodes)
@@ -295,7 +300,7 @@ def main():
     arg_length = len(sys.argv)
 
     if (arg_length > 1):
-        print("Starting Import with the following parameters: " + str(sys.argv))
+        #print("Starting Import with the following parameters: " + str(sys.argv))
         try:
             init_puzzle._setMatrix(sys.argv[1])
         except ValueError:
@@ -303,11 +308,13 @@ def main():
             init_puzzle._setMatrix(getListFromUser())
     else:
         init_puzzle._setMatrix(create_puzzle())
-    printMatrix(init_puzzle.currentMatrix)
-    print("Puzzle recieved, solving problem")
 
-    if(start_solving(init_puzzle)):
-        print("Solution Found after %s attempts"%(len(matrix_ledger)))
+    fringe_list.append(init_puzzle) #Add init puzzle to fringe
+    print("Puzzle recieved, solving problem")
+    printMatrix(init_puzzle.currentMatrix)
+
+    start_solving(init_puzzle)
+        
 
 
 if __name__ == "__main__":
