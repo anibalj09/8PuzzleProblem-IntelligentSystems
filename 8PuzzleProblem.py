@@ -89,7 +89,7 @@ class puzzleType:
         # Goes through each row printing all the columns
         for x in range(0, _ARRAY_SIZE):
             print (self.currentMatrix[x][:])
-        print("\tThis matrix\'s value: %s\n"%(self.totalH))
+        print("\tThis matrix\'s manhattan distance: %s, and displaced heuristic %s, and total value: %s\n"%(self.manDistH, self.displacedH, self.totalH))
         #print ("The total displaced heuristic is " + str(disHeur) + ", and the total Manhattan Distance is " + str(manDis))
 
 
@@ -161,7 +161,7 @@ class puzzleType:
             for y in range(0, _ARRAY_SIZE):
                 if self.currentMatrix[x][y] != goalList[x][y]:
                     return False
-        print("Solution Found after %s attempts"%(len(matrix_ledger)))    
+        print("Solution Found after %s moves"%(len(matrix_ledger)-2)) #subtract two for the init of '0' and for the puzzle's first state   
         return True
     
 
