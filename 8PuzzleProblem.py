@@ -2,14 +2,15 @@
 import sys
 import random
 import ast
+import time
 #from dataclasses import dataclass
 
 # Constant with size of rows/columns
 _ARRAY_SIZE = 3
 
-goalList =[[0,8,7],
-       [6,5,4],
-       [3,2,1]]
+goalList =[[1,2,3],
+       [4,5,6],
+       [7,8,0]]
 
 matrix_ledger = {'0':1} #add default init so that isn't considered as a state
 fringe_list = []
@@ -73,11 +74,14 @@ class puzzleType:
             self.currentMatrix = provided_matrix
         else:
             raise ValueError('Provided matrix was not a list of numbers')
-        self.matrixFingerprint = str(list(provided_matrix))
-
+        self._addMatrixFingerPrint()
         if(not add_to_matrix_history(self)):
             print("In a recursive state aborting")
             exit()
+
+
+    def _addMatrixFingerPrint(self):
+        self.matrixFingerprint = str(list(self.currentMatrix))
 
 
     def _printMatrix(self):
@@ -186,6 +190,7 @@ class puzzleType:
             tempNode1.currentMatrix[zeroX][zeroY] = self.currentMatrix[zeroX-1][zeroY]
             tempNode1.currentMatrix[zeroX-1][zeroY] = self.currentMatrix[zeroX][zeroY]
             tempNode1._assignHeuristicsToNode()
+            tempNode1._addMatrixFingerPrint()
             listNodesGenerated.append(tempNode1)
         if zeroX < (_ARRAY_SIZE - 2): # if empty is not on the right-most side
             tempNode2 = self._cloneMatrix()
@@ -193,6 +198,7 @@ class puzzleType:
             tempNode2.currentMatrix[zeroX][zeroY] = self.currentMatrix[zeroX+1][zeroY]
             tempNode2.currentMatrix[zeroX+1][zeroY] = self.currentMatrix[zeroX][zeroY]
             tempNode2._assignHeuristicsToNode()
+            tempNode2._addMatrixFingerPrint()
             listNodesGenerated.append(tempNode2)
         if zeroY > 0: # if empty is not on the bottom side
             tempNode3 = self._cloneMatrix()
@@ -200,6 +206,7 @@ class puzzleType:
             tempNode3.currentMatrix[zeroX][zeroY] = self.currentMatrix[zeroX][zeroY-1]
             tempNode3.currentMatrix[zeroX][zeroY-1] = self.currentMatrix[zeroX][zeroY]
             tempNode3._assignHeuristicsToNode()
+            tempNode3._addMatrixFingerPrint()
             listNodesGenerated.append(tempNode3)
         if zeroY < (_ARRAY_SIZE - 2): # if empty is not on the top side
             tempNode4 = self._cloneMatrix()
@@ -207,6 +214,7 @@ class puzzleType:
             tempNode4.currentMatrix[zeroX][zeroY] = self.currentMatrix[zeroX][zeroY+1]
             tempNode4.currentMatrix[zeroX][zeroY+1] = self.currentMatrix[zeroX][zeroY]
             tempNode4._assignHeuristicsToNode()
+            tempNode4._addMatrixFingerPrint()
             listNodesGenerated.append(tempNode4)
         
         return listNodesGenerated
@@ -249,15 +257,18 @@ def getGoalListFromUser():
 
 
 def determine_best_move(listNodesGenerated):
+    global fringe_list
     #print("List of nodes Generated: %s"%(listNodesGenerated))
-    options_by_value = sorted(listNodesGenerated, key=lambda obj: obj.totalH)
-    options_by_value.append(fringe_list) #Add existing fringe_list containing unattempted states
-    x = 0
-    while(check_matrix_history(options_by_value[x])): #enter loop if true
-        x = x + 1
+    options_by_value = sorted(listNodesGenerated, key=lambda obj: obj.totalH) + fringe_list #Add to the end, existing fringe_list containing unattempted states
+    
+    print("Options: %s and length: %s"%(options_by_value,len(options_by_value)))
+    current_canidate = options_by_value.pop()
+    while(check_matrix_history(current_canidate)): #enter loop if true
+        print("clash with: %s"%(current_canidate.matrixFingerprint))
+        current_canidate = options_by_value.pop()
     #print("selected: %s"%(options_by_value[x].currentMatrix))
-    fringe_list.append(options_by_value[:x:-1][::-1]) #slice python lower-bound exclusive and then reverse the order
-    return options_by_value[x] #Current selection is left out of fringe_list
+    fringe_list = options_by_value #This will replace existing fringe list with remaining unchecked nodes
+    return current_canidate
     
 
 def start_solving(puzzle):
@@ -266,13 +277,15 @@ def start_solving(puzzle):
     else:
         aListOfNodes = puzzle._generatePossibleStates()
         next_move = determine_best_move(aListOfNodes)
+
+        print("Printing next move possibilities: ")
+        for x in range(0, len(aListOfNodes)):
+            tempNode = aListOfNodes.pop() #This pop is destructive and must be called after determine_best_move()
+            tempNode._printMatrix()
+        
+        print("Printing chosen path:")
+        printMatrix(next_move.currentMatrix)
         puzzle._setMatrix(next_move.currentMatrix)
-
-        # print("Printing next move possibilities: ")
-        # for x in range(0, len(aListOfNodes)):
-        #     tempNode = aListOfNodes.pop()
-        #     tempNode._printMatrix()
-
         start_solving(puzzle)
 
 
