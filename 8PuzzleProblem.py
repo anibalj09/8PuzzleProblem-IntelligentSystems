@@ -191,15 +191,15 @@ class puzzleType:
             tempNode1.currentMatrix[zeroX-1][zeroY] = self.currentMatrix[zeroX][zeroY]
             tempNode1._assignHeuristicsToNode()
             tempNode1._addMatrixFingerPrint()
-            listNodesGenerated.append(tempNode1)
-        if zeroX < (_ARRAY_SIZE - 2): # if empty is not on the right-most side
+            listNodesGenerated.append(tempNode1) #choice to move left
+        if zeroX != _ARRAY_SIZE-1: # if empty is not on the right-most side
             tempNode2 = self._cloneMatrix()
             tempNode2.parent = self
             tempNode2.currentMatrix[zeroX][zeroY] = self.currentMatrix[zeroX+1][zeroY]
             tempNode2.currentMatrix[zeroX+1][zeroY] = self.currentMatrix[zeroX][zeroY]
             tempNode2._assignHeuristicsToNode()
             tempNode2._addMatrixFingerPrint()
-            listNodesGenerated.append(tempNode2)
+            listNodesGenerated.append(tempNode2) #choice to move right
         if zeroY > 0: # if empty is not on the bottom side
             tempNode3 = self._cloneMatrix()
             tempNode3.parent = self
@@ -207,15 +207,15 @@ class puzzleType:
             tempNode3.currentMatrix[zeroX][zeroY-1] = self.currentMatrix[zeroX][zeroY]
             tempNode3._assignHeuristicsToNode()
             tempNode3._addMatrixFingerPrint()
-            listNodesGenerated.append(tempNode3)
-        if zeroY < (_ARRAY_SIZE - 2): # if empty is not on the top side
+            listNodesGenerated.append(tempNode3) #choice to move down
+        if zeroY != _ARRAY_SIZE-1: # if empty is not on the top side
             tempNode4 = self._cloneMatrix()
             tempNode4.parent = self
             tempNode4.currentMatrix[zeroX][zeroY] = self.currentMatrix[zeroX][zeroY+1]
             tempNode4.currentMatrix[zeroX][zeroY+1] = self.currentMatrix[zeroX][zeroY]
             tempNode4._assignHeuristicsToNode()
             tempNode4._addMatrixFingerPrint()
-            listNodesGenerated.append(tempNode4)
+            listNodesGenerated.append(tempNode4) #choice to move up
         
         return listNodesGenerated
     
@@ -225,8 +225,8 @@ class puzzleType:
         for x in range(0, _ARRAY_SIZE):
             for y in range(0, _ARRAY_SIZE):
                 if self.currentMatrix[x][y] == 0:
+                    print("zeroth postion: %s %s"%(x,y))
                     return x, y
-        
         return -1,-1    
         
 
