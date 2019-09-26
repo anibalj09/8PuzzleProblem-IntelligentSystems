@@ -16,12 +16,17 @@ matrix_ledger = {'0':1} #add default init so that isn't considered as a state
 fringe_list = []
 
 def generate_number_list():
+    """
+    Generates random puzzle matrix by shuffling the existing numbers 
+    and returns it.
+    """
     number_list = list(range(0, _ARRAY_SIZE*3))
     random.shuffle(number_list) # it is shuffled in place
     return number_list
 
 
 def create_puzzle(number_list=generate_number_list()):
+    """Create random puzzle matrix from a number list and returns."""
     first_row = number_list[0:_ARRAY_SIZE*1]
     second_row = number_list[_ARRAY_SIZE*1:_ARRAY_SIZE*2]
     third_row = number_list[_ARRAY_SIZE*2:_ARRAY_SIZE*3]
@@ -37,6 +42,8 @@ def printMatrix(currentMatrix):
 
 
 def add_to_matrix_history(aPuzzle):
+    """Checks if a matrix is already in history, and if not, then adds it.
+    Returns false if it already exists, and true if is added."""
     if(check_matrix_history(aPuzzle)):
         return 0 # If it already exists
     else:
@@ -45,6 +52,7 @@ def add_to_matrix_history(aPuzzle):
 
 
 def check_matrix_history(aPuzzle):
+    """Returns the specific matrix history of aPuzzle sent as a parameter."""
     return aPuzzle.matrixFingerprint in matrix_ledger #Returns true if it already exists
 
 
@@ -52,9 +60,39 @@ class puzzleType:
     """
     Class containing the methods and variables for the nodes generated of 
     the matrix.
-    """    
+    ---
+    
+    Class variables:
+    
+    -currentMatrix = matrix state of node.
+    -displacedH = number of displaced tiles in currentMatrix
+    -manDistH = Manhattan Distance of currentMatrix 
+    -totalH = sum of both heuristics for currentMatrix
+    -parentNode = saves parent node of current node.
+    -matrixFingerprint = used for identifying if we already generated this node.
+    -previousMoves = used for saving path.
+    
+    Functions:
+    
+    -_setMatrix = Create currentMatrix for node.
+    -_addMatrixFingerPrint = Add to node its matrixFingerprint.
+    -_printMatrix = Print a matrix object.
+    -_getManhattanDistance = Calculate the Manhattan Distance heuristic 
+        from received list element to goal list. Return heuristic. 
+    -_getHeuristics = Get both heuristics from currentMatrix.
+    -_assignHeuristicsToNode = Finds the heuristics and saves it to the current node.
+    -_checkGoal = Check if current list is the goal state.
+    -_cloneMatrix = Clone current matrix to new puzzleType node and return. 
+        Used for creating new children nodes.
+    -_generatePossibleStates = Generate all possible moves in the current puzzle.
+        Checks all adjacent modes of empty / 0 tile.
+    -_getZeroPosition = Get the x and y coordinates of the zero tile.
+    
+    """
     
     def __init__(self):
+        """Constructor for puzzleType class. Initializes all of the
+		   class variables."""
         self.displacedH = 0
         self.manDistH = 0
         self.totalH = 0
@@ -67,7 +105,7 @@ class puzzleType:
 
 
     def _setMatrix(self,provided_matrix):
-        #print("Provided with: %s" %(provided_matrix) )
+        """Create matrix for node."""
         if(isinstance(provided_matrix,str)):
             self.currentMatrix = create_puzzle(ast.literal_eval(provided_matrix))
         elif(isinstance(provided_matrix,list)):
@@ -81,6 +119,7 @@ class puzzleType:
 
 
     def _addMatrixFingerPrint(self):
+        """Add to node its matrixFingerprint."""
         self.matrixFingerprint = str(list(self.currentMatrix))
 
 
@@ -255,6 +294,8 @@ def getGoalListFromUser():
 
 
 def determine_best_move(listNodesGenerated):
+    """Determine best state to transition to (best node in fringe) and
+	   return the candidate."""
     global fringe_list
     options_by_value = sorted(listNodesGenerated, key=lambda obj: obj.totalH) #first look at moves avaliable in this turn before trying fringe. (Which is basically reverting board to a previous state when stuck)
     
@@ -277,6 +318,7 @@ def determine_best_move(listNodesGenerated):
     
 
 def start_solving(puzzle):
+    """Solve puzzle."""
     if(puzzle._checkGoal()):
         return 1
     else:
@@ -315,6 +357,7 @@ def count_inversions(num_list):
 
 
 def main():
+    """Main function of program."""
     init_puzzle = puzzleType()
 
     arg_length = len(sys.argv)
