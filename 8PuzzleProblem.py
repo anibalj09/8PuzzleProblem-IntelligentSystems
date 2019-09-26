@@ -294,6 +294,26 @@ def start_solving(puzzle):
         return puzzle
 
 
+def determine_solvability(a_matrix):
+    num_list = [item for sublist in a_matrix for item in sublist]
+    inversion_count = count_inversions(num_list)
+    if inversion_count%2 == 1:
+        return False #unsolvable
+    else:
+        return True #solvable
+
+
+def count_inversions(num_list):
+    inversion_count = 0
+    list_len = len(num_list)
+
+    for i in range(0, list_len):
+        for j in range(i+1, list_len):
+            if(num_list[j] > num_list[i] ):
+                inversion_count = inversion_count + 1
+    return inversion_count
+
+
 def main():
     init_puzzle = puzzleType()
 
@@ -308,15 +328,16 @@ def main():
             init_puzzle._setMatrix(getListFromUser())
     else:
         init_puzzle._setMatrix(create_puzzle())
+    if determine_solvability(init_puzzle.currentMatrix):
+        fringe_list.append(init_puzzle) #Add init puzzle to fringe
+        print("Puzzle recieved, solving problem")
+        printMatrix(init_puzzle.currentMatrix)
 
-    fringe_list.append(init_puzzle) #Add init puzzle to fringe
-    print("Puzzle recieved, solving problem")
-    printMatrix(init_puzzle.currentMatrix)
-
-    while(type(start_solving(init_puzzle)) != int):
-        print("Total moves so far:  %s" %(len(matrix_ledger)-2)) #subtract two for the init of '0' and for the puzzle's first state
+        while(type(start_solving(init_puzzle)) != int):
+            print("Total moves so far:  %s" %(len(matrix_ledger)-2)) #subtract two for the init of '0' and for the puzzle's first state
+    else:
+        print("Puzzle is unsolvable as it contains an odd number of inversions")
         
-
 
 if __name__ == "__main__":
     main()
